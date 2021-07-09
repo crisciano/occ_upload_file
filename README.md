@@ -29,9 +29,11 @@ no BASE_URL e o AUTH
 
 ## payload
 
+```bash
 METHOD: POST
 URL: http://localhost:3001/file/send
 PARAMS FORM-DATA:
 uploadType : tipo de arquivo a ser enviado ex: "thirdPartyFile, file"
 fileUpload : file para upload
 pathDest : caminho que vai estar disponivel ex : /xml , /products
+```
