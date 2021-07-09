@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Logs - Send File</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="https://asd-view.herokuapp.com/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="https://asd-view.herokuapp.com/vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+    <!-- DataTables CSS -->
+    <link href="https://asd-view.herokuapp.com/vendor/datatables-plugins/dataTables.bootstrap.css" rel="stylesheet">
+
+    <!-- DataTables Responsive CSS -->
+    <link href="https://asd-view.herokuapp.com/vendor/datatables-responsive/dataTables.responsive.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="https://asd-view.herokuapp.com/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+  <div class="container">
+      <h1>Logs - occ-upload-file</h1>
+      <table style="table-layout: fixed; word-wrap: break-word;" class="table table-condensed" id="dataTables-erros">
+          <thead>
+              <tr>
+                  <th>#</th>
+                  <th width="65%;">Mensagem</th>
+                  <th>Microservice</th>
+                  <th>Data de Execução</th>
+              </tr>
+          </thead>
+          <tbody>
+            <%for(var i=0; i<lines.length; i++) {%>
+              <tr>
+                  <td><%= lines[i].level %></td>
+                  <td><%= lines[i].message %></td>
+                  <td><%= lines[i].microservice %></td>
+                  <td><%= lines[i].timestamp %></td>
+              </tr>
+            <% } %>
+          </tbody>
+      </table>
+  </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="https://asd-view.herokuapp.com/vendor/jquery/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="https://asd-view.herokuapp.com/vendor/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="https://asd-view.herokuapp.com/vendor/metisMenu/metisMenu.min.js"></script>
+
+    <!-- DataTables JavaScript -->
+    <script src="https://asd-view.herokuapp.com/vendor/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="https://asd-view.herokuapp.com/vendor/datatables-plugins/dataTables.bootstrap.min.js"></script>
+    <script src="https://asd-view.herokuapp.com/vendor/datatables-responsive/dataTables.responsive.js"></script>
+
+    <!-- Page-Level Demo Scripts - Tables - Use for reference -->
+    <script>
+    $(document).ready(function() {
+        $('#dataTables-erros').DataTable({
+          "responsive": true,
+          "language": {
+            "lengthMenu": "Mostrando _MENU_ registros",
+            "zeroRecords": "Nada Encontrado - desculpe",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "Nenhum Registro Encontrado",
+            "infoFiltered": "(filtrado de _MAX_ registros)",
+            "sSearch":        "Buscar:",
+            "paginate": {
+              "previous": "Anterior",
+              "next": "Próxima",
+            }
+          }
+        });
+    });
+    </script>
+
+</body>
+</html>

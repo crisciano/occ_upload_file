@@ -1,0 +1,177 @@
+#Declarar as seguintes variaveis no settings/environment variables do repositorio no bitbucket: 
+# - DOCKER_HUB_USERNAME
+# - DOCKER_HUB_PASSWORD
+# - DOCKER_IMAGE_NAME = Exemplo: reserva/occ-order-shipping 
+
+image: 
+  name: node:8.10.0-slim
+
+options:
+  max-time: 10    
+pipelines:
+  custom: # Pipelines that can only be triggered manually - Geração das versões latest manualmente
+    generate-master-latest:
+      - step:
+          name: Validate branch
+          deployment: production
+          script:
+            - 'if [ "$BITBUCKET_BRANCH" != "master" ]; then echo "ESTE BUILD SÓ PODE SER CHAMADO DA BRANCH MASTER. EXECUCAO ABORTADA." && return 1; fi'
+            - echo "Branch validada com sucesso."
+      - step:
+          name: Test
+          caches:
+            - node
+          script:
+            - export NODE_ENV=test
+            - npm install
+            - npm test
+      - step:
+          name: Build, Push to Registry
+          services:
+            - docker
+          script:
+            - echo "MANUAL - Gerando build e Docker Image MASTER e push ao registry. - TAG LATEST"
+            - path=$DOCKER_IMAGE_NAME":"
+            - tag="latest"
+            #padrao do nome da image = reserva/occ-shipping:[branch-name]latest
+            - export FULL_IMAGE_NAME=$path$tag
+            
+            - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
+            
+            - echo "container name "$FULL_IMAGE_NAME
+            - docker build -t $FULL_IMAGE_NAME .
+            
+            - docker push $FULL_IMAGE_NAME
+            
+            
+    generate-develop-latest:
+      - step:
+          name: Validate branch
+          deployment: staging
+          script:
+            - 'if [ "$BITBUCKET_BRANCH" != "develop" ]; then echo "ESTE BUILD SÓ PODE SER CHAMADO DA BRANCH DEVELOP. EXECUCAO ABORTADA." && return 1; fi'
+            - echo "Branch validada com sucesso."
+      - step:
+          name: Test
+          caches:
+            - node
+          script:
+            - export NODE_ENV=test
+            - npm install
+            - npm test
+      - step:
+          name: Build, Push to Registry
+          services:
+            - docker
+          script:
+            - echo "MANUAL - Gerando build e Docker Image para HOMOLOGACAO e push ao registry. - TAG LATEST"
+            - path=$DOCKER_IMAGE_NAME":"
+            - tag="latest"
+            #padrao do nome da image = reserva/occ-shipping:[branch-name]latest
+            - export FULL_IMAGE_NAME=$path$tag
+            
+            - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
+            
+            - echo "container name "$FULL_IMAGE_NAME
+            - docker build -t $FULL_IMAGE_NAME .
+            
+            - docker push $FULL_IMAGE_NAME
+
+            
+#  default: #branches que não se encaixam nas branches citadas abaixo são tratadas por essa pipeline
+#    - step:
+#        name: BRANCH sem pipeline
+#        deployment: test
+#        script: 
+#          - echo "BRANCH sem pipeline:" $BITBUCKET_REPO_OWNER
+#          - return 1;
+ 
+ 
+  branches:
+    master:
+      - step:
+          name: Test
+          caches:
+            - node
+          script:
+            - export NODE_ENV=test
+            - npm install
+            - npm test
+      - step:
+          name: Build, Push to Registry
+          services:
+            - docker
+          deployment: production
+          script:
+            - echo "AUTOMATICA - Gerando build e Docker Image para MASTER e push ao registry"
+            - path=$DOCKER_IMAGE_NAME":"
+            - tag=$(echo "$BITBUCKET_BRANCH" | tr -dc '[:alnum:]\n\r-_' | tr '/*' '_'| tr '[:upper:]' '[:lower:]')
+             #padrao do nome da image = reserva/occ-shipping:[branch-name][build-number]
+            - export FULL_IMAGE_NAME=$path$tag"-"$BITBUCKET_BUILD_NUMBER
+            
+            - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
+            
+            - echo "container name "$FULL_IMAGE_NAME
+            - docker build -t $FULL_IMAGE_NAME .
+            
+            - docker push $FULL_IMAGE_NAME
+
+    release*: #A imagem é gerada com a tag da release. Ex: reserva/occ-order-shipping:release/0.0.1-1
+      - step:
+          name: Test
+          caches:
+            - node
+          script:
+            - export NODE_ENV=test
+            - npm install
+            - npm test
+      - step:
+          name: Build, Push to Registry
+          services:
+            - docker
+          deployment: staging
+          script:
+            - echo "AUTOMATICA - Gerando build e Docker Image para RELEASE e push ao registry."
+            - path=$DOCKER_IMAGE_NAME":"
+            - tag=$(echo "$BITBUCKET_BRANCH" | tr -dc '[:alnum:]\n\r-_' | tr '/*' '_'| tr '[:upper:]' '[:lower:]')
+             #padrao do nome da image = reserva/occ-shipping:[branch-name]-[build-number]
+            - export FULL_IMAGE_NAME=$path$tag"-"$BITBUCKET_BUILD_NUMBER
+            
+            - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
+            
+            - echo "container name "$FULL_IMAGE_NAME
+            - docker build -t $FULL_IMAGE_NAME .
+            
+            - docker push $FULL_IMAGE_NAME
+            
+            
+    hotfix*: #A imagem é gerada com a tag do hotfix. Ex: reserva/occ-order-shipping:hotfix_carrinho-1
+      - step:
+          name: Test
+          caches:
+            - node
+          script:
+            - export NODE_ENV=test
+            - npm install
+            - npm test
+      - step:
+          name: Build, Push to Registry
+          services:
+            - docker
+          deployment: staging
+          script:
+            - echo "AUTOMATICA - Gerando build e Docker Image para HOTFIX e push ao registry."
+            - path=$DOCKER_IMAGE_NAME":"
+            - tag=$(echo "$BITBUCKET_BRANCH" | tr -dc '[:alnum:]\n\r-_' | tr '/*' '_'| tr '[:upper:]' '[:lower:]')
+             #padrao do nome da image = reserva/occ-shipping:[branch-name]-[build-number]
+            - export FULL_IMAGE_NAME=$path$tag"-"$BITBUCKET_BUILD_NUMBER
+            
+            - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
+            
+            - echo "container name "$FULL_IMAGE_NAME
+            - docker build -t $FULL_IMAGE_NAME .
+            
+            - docker push $FULL_IMAGE_NAME
+            
+
+             
